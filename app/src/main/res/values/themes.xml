@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Tema base de la app (oscuro, sin ActionBar) -->
+    <style name="Theme.BioAetherCore" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Colores primarios -->
+        <item name="colorPrimary">#00d4ff</item>
+        <item name="colorPrimaryVariant">#0a1520</item>
+        <item name="colorOnPrimary">#050b12</item>
+        <item name="colorSecondary">#ff5e1a</item>
+        <item name="colorOnSecondary">#ffffff</item>
+
+        <!-- Fondo de la app -->
+        <item name="android:windowBackground">#050b12</item>
+        <item name="android:statusBarColor">#050b12</item>
+        <item name="android:navigationBarColor">#050b12</item>
+
+        <!-- Sin ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!-- Transiciones suaves -->
+        <item name="android:windowAnimationStyle">@style/WindowAnimStyle</item>
+    </style>
+
+    <!-- Tema del Splash (sin transición rara) -->
+    <style name="Theme.BioAetherCore.Splash" parent="Theme.BioAetherCore">
+        <item name="android:windowBackground">#050b12</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <!-- Animaciones de ventana personalizadas -->
+    <style name="WindowAnimStyle" parent="@android:style/Animation.Activity">
+        <item name="android:activityOpenEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:activityOpenExitAnimation">@android:anim/fade_out</item>
+        <item name="android:activityCloseEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:activityCloseExitAnimation">@android:anim/fade_out</item>
+    </style>
+
+</resources>

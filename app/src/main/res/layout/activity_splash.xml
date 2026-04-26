@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#050b12"
+    android:padding="32dp">
+
+    <!-- Ícono / símbolo central -->
+    <TextView
+        android:id="@+id/splash_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="◈"
+        android:textSize="64sp"
+        android:textColor="#00d4ff"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Título principal -->
+    <TextView
+        android:id="@+id/splash_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BIO-AETHER CORE"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#ffffff"
+        android:letterSpacing="0.15"
+        android:fontFamily="monospace"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Línea decorativa -->
+    <View
+        android:layout_width="200dp"
+        android:layout_height="1dp"
+        android:background="#00d4ff"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Subtítulo -->
+    <TextView
+        android:id="@+id/splash_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SISTEMA DE CONTROL DE RESONANCIA"
+        android:textSize="10sp"
+        android:textColor="#4a7a8a"
+        android:letterSpacing="0.2"
+        android:fontFamily="monospace"
+        android:alpha="0"
+        android:layout_marginBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/splash_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="// v4.0 — CLASIFICADO"
+        android:textSize="9sp"
+        android:textColor="#ff5e1a"
+        android:letterSpacing="0.15"
+        android:fontFamily="monospace"
+        android:alpha="0"/>
+
+</LinearLayout>

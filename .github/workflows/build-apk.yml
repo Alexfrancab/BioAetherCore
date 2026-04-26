@@ -1,0 +1,48 @@
+name: 🔨 Build Bio-Aether APK
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:   # Permite ejecutarlo manualmente con un botón
+
+jobs:
+  build-apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Descargar el código del repositorio
+      - name: 📥 Checkout código
+        uses: actions/checkout@v4
+
+      # 2. Configurar Java 17
+      - name: ☕ Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # 3. Dar permisos de ejecución al wrapper de Gradle
+      - name: 🔧 Permisos Gradle
+        run: chmod +x gradlew
+
+      # 4. Descargar dependencias y compilar APK debug
+      - name: 🏗️ Compilar APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
+
+      # 5. Subir el APK como artifact descargable
+      - name: 📦 Subir APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: BioAetherCore-v4.0-debug
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 30   # Disponible 30 días para descargar
+
+      # 6. Mostrar info del APK en el log
+      - name: 📊 Info del APK
+        run: |
+          echo "✅ Build completado"
+          ls -lh app/build/outputs/apk/debug/*.apk
+          echo "Descarga el APK desde la pestaña Actions → tu workflow → Artifacts"

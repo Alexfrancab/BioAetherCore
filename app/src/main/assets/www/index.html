@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bio-Aether Core — Registro de Operador</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #00d4ff;
+    --cyan-dim: rgba(0,212,255,0.15);
+    --cyan-glow: rgba(0,212,255,0.5);
+    --orange: #ff5e1a;
+    --orange-dim: rgba(255,94,26,0.2);
+    --dark: #050b12;
+    --steel: #0a1520;
+    --panel: rgba(5,20,35,0.85);
+    --text: #c8e8f0;
+    --text-dim: #4a7a8a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+
+  /* ── BACKGROUND SCENE ── */
+  .scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  /* Skyline industrial */
+  .skyline {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 45%;
+    background:
+      linear-gradient(to top, #0a0e14 0%, transparent 100%);
+  }
+
+  .skyline svg {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.35;
+  }
+
+  /* Water reflection */
+  .water {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 22%;
+    background: linear-gradient(to bottom,
+      rgba(0,40,60,0.4) 0%,
+      rgba(0,20,35,0.9) 100%);
+    border-top: 1px solid rgba(0,212,255,0.08);
+  }
+
+  /* Sky gradient */
+  .sky {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 60% 0%, rgba(0,30,50,0.9) 0%, transparent 70%),
+      linear-gradient(180deg, #050b12 0%, #071018 40%, #0a1420 70%, #050b12 100%);
+  }
+
+  /* Smoke chimneys */
+  .smoke-wrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60%;
+    pointer-events: none;
+  }
+
+  @keyframes smokeRise {
+    0%   { transform: translateY(0) scaleX(1); opacity: 0.18; }
+    50%  { transform: translateY(-120px) scaleX(1.4); opacity: 0.08; }
+    100% { transform: translateY(-240px) scaleX(1.8); opacity: 0; }
+  }
+
+  .smoke {
+    position: absolute;
+    bottom: 0;
+    border-radius: 50%;
+    background: rgba(180,200,220,0.12);
+    filter: blur(18px);
+    animation: smokeRise linear infinite;
+  }
+  .smoke:nth-child(1) { width: 60px; height: 80px; left: 33%; animation-duration: 6s; }
+  .smoke:nth-child(2) { width: 45px; height: 60px; left: 35%; animation-duration: 8s; animation-delay: 2s; }
+  .smoke:nth-child(3) { width: 50px; height: 70px; left: 50%; animation-duration: 7s; animation-delay: 1s; }
+  .smoke:nth-child(4) { width: 40px; height: 55px; left: 52%; animation-duration: 9s; animation-delay: 3s; }
+
+  /* Particle canvas */
+  #particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Grid overlay */
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* ── DIAGRAM WIREFRAME ── */
+  .diagram {
+    position: absolute;
+    right: 4%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 380px;
+    opacity: 0.22;
+    filter: drop-shadow(0 0 20px var(--cyan));
+    animation: diagramPulse 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes diagramPulse {
+    0%, 100% { opacity: 0.22; filter: drop-shadow(0 0 20px var(--cyan)); }
+    50%       { opacity: 0.32; filter: drop-shadow(0 0 40px var(--cyan)); }
+  }
+
+  .diagram svg { width: 100%; }
+
+  /* ── MAIN LAYOUT ── */
+  .page {
+    position: relative;
+    z-index: 10;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem clamp(1.5rem, 6vw, 5rem);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER BADGE ── */
+  .badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 2rem;
+    animation: fadeSlideDown 0.8s ease both;
+  }
+
+  .badge-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 12px var(--cyan);
+    animation: blink 2s step-end infinite;
+  }
+
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .badge-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+
+  /* ── TITLE ── */
+  .title-block {
+    margin-bottom: 0.5rem;
+    animation: fadeSlideDown 0.8s 0.1s ease both;
+  }
+
+  .title-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 4.5vw, 3.4rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+    color: #fff;
+    text-shadow: 0 0 40px var(--cyan-glow), 0 0 80px rgba(0,212,255,0.15);
+  }
+
+  h1 span {
+    color: var(--cyan);
+  }
+
+  .tagline {
+    margin-top: 0.9rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    animation: fadeSlideDown 0.8s 0.2s ease both;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    width: 280px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+    margin: 2rem 0;
+    animation: fadeSlideDown 0.8s 0.25s ease both;
+  }
+
+  /* ── REGISTER PANEL ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid rgba(0,212,255,0.18);
+    border-left: 3px solid var(--cyan);
+    padding: 2.2rem 2.4rem;
+    width: clamp(300px, 90vw, 440px);
+    backdrop-filter: blur(12px);
+    position: relative;
+    animation: fadeSlideUp 0.9s 0.35s ease both;
+    box-shadow:
+      0 0 60px rgba(0,212,255,0.07),
+      inset 0 0 40px rgba(0,212,255,0.03);
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: -1px; right: -1px;
+    width: 20px; height: 20px;
+    border-top: 2px solid var(--cyan);
+    border-right: 2px solid var(--cyan);
+  }
+
+  .panel::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: -1px;
+    width: 20px; height: 20px;
+    border-bottom: 2px solid var(--cyan);
+    border-left: 2px solid var(--cyan);
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.8rem;
+  }
+
+  .panel-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+  }
+
+  .panel-id {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── FORM ── */
+  .field {
+    margin-bottom: 1.3rem;
+    position: relative;
+  }
+
+  label {
+    display: block;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 0.45rem;
+  }
+
+  input, select {
+    width: 100%;
+    background: rgba(0,20,35,0.6);
+    border: 1px solid rgba(0,212,255,0.15);
+    border-bottom: 1px solid rgba(0,212,255,0.4);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.88rem;
+    padding: 0.7rem 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  input::placeholder { color: var(--text-dim); opacity: 0.6; }
+
+  input:focus, select:focus {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.04);
+    box-shadow: 0 0 0 1px rgba(0,212,255,0.2), 0 4px 20px rgba(0,212,255,0.08);
+  }
+
+  .field-icon {
+    position: absolute;
+    right: 0.9rem;
+    bottom: 0.72rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+
+  /* Role select */
+  .select-wrap { position: relative; }
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--cyan);
+    pointer-events: none;
+    font-size: 0.8rem;
+  }
+
+  select option { background: #0a1520; }
+
+  /* Access level dots */
+  .access-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.6rem;
+  }
+
+  .access-btn {
+    flex: 1;
+    background: rgba(0,20,35,0.6);
+    border: 1px solid rgba(0,212,255,0.15);
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    padding: 0.55rem 0.3rem;
+    text-align: center;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .access-btn:hover, .access-btn.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: rgba(0,212,255,0.07);
+    box-shadow: 0 0 12px rgba(0,212,255,0.15);
+  }
+
+  /* ── REGISTER BUTTON ── */
+  .btn-register {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 1rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: color 0.3s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-register::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cyan);
+    transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+    z-index: 0;
+  }
+
+  .btn-register:hover::before { transform: translateX(0); }
+  .btn-register:hover { color: var(--dark); }
+  .btn-register span { position: relative; z-index: 1; }
+
+  .btn-register:active { transform: scale(0.98); }
+
+  /* Loading state */
+  .btn-register.loading span::after {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border: 1.5px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    margin-left: 10px;
+    vertical-align: middle;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SUCCESS STATE ── */
+  .success-panel {
+    display: none;
+    text-align: center;
+    padding: 1rem 0;
+  }
+
+  .success-icon {
+    width: 56px; height: 56px;
+    border: 2px solid var(--cyan);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.2rem;
+    font-size: 1.4rem;
+    color: var(--cyan);
+    box-shadow: 0 0 30px var(--cyan-glow);
+    animation: successPop 0.5s cubic-bezier(0.17,0.89,0.32,1.49) both;
+  }
+
+  @keyframes successPop {
+    from { transform: scale(0); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+
+  .success-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    margin-bottom: 0.5rem;
+  }
+
+  .success-msg {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    line-height: 1.7;
+  }
+
+  .operator-id {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid rgba(255,94,26,0.4);
+    background: var(--orange-dim);
+    color: var(--orange);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+  }
+
+  /* ── FOOTER STATS ── */
+  .stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 2.5rem;
+    animation: fadeSlideUp 0.9s 0.5s ease both;
+  }
+
+  .stat { }
+  .stat-val {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    color: var(--cyan);
+    display: block;
+    letter-spacing: 0.05em;
+  }
+  .stat-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* ── SCAN LINE ── */
+  .scanline {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.4), transparent);
+    animation: scanDown 6s linear infinite;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  @keyframes scanDown {
+    from { top: 0; }
+    to   { top: 100%; }
+  }
+
+  /* ── CORNER DECORATIONS ── */
+  .corner {
+    position: fixed;
+    width: 60px; height: 60px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .corner-tl { top: 1.5rem; left: 1.5rem;
+    border-top: 1px solid rgba(0,212,255,0.3);
+    border-left: 1px solid rgba(0,212,255,0.3); }
+  .corner-tr { top: 1.5rem; right: 1.5rem;
+    border-top: 1px solid rgba(0,212,255,0.3);
+    border-right: 1px solid rgba(0,212,255,0.3); }
+  .corner-bl { bottom: 1.5rem; left: 1.5rem;
+    border-bottom: 1px solid rgba(0,212,255,0.3);
+    border-left: 1px solid rgba(0,212,255,0.3); }
+  .corner-br { bottom: 1.5rem; right: 1.5rem;
+    border-bottom: 1px solid rgba(0,212,255,0.3);
+    border-right: 1px solid rgba(0,212,255,0.3); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 0.5rem 2rem;
+    background: rgba(5,11,18,0.9);
+    border-top: 1px solid rgba(0,212,255,0.1);
+    display: flex;
+    gap: 2rem;
+    z-index: 30;
+    backdrop-filter: blur(8px);
+  }
+
+  .status-item {
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #00ff88;
+    box-shadow: 0 0 6px #00ff88;
+    animation: blink 3s step-end infinite;
+  }
+
+  .status-dot.orange {
+    background: var(--orange);
+    box-shadow: 0 0 6px var(--orange);
+    animation-delay: 1s;
+  }
+
+  /* Error state */
+  .error-msg {
+    display: none;
+    font-size: 0.65rem;
+    color: #ff4455;
+    letter-spacing: 0.1em;
+    margin-top: 0.4rem;
+    padding-left: 0.5rem;
+    border-left: 2px solid #ff4455;
+  }
+
+  input.error { border-color: #ff4455 !important; }
+
+  @media (max-width: 600px) {
+    .diagram { display: none; }
+    .stats { gap: 1.2rem; }
+    .panel { padding: 1.6rem 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Scan line -->
+<div class="scanline"></div>
+
+<!-- Corner decorations -->
+<div class="corner corner-tl"></div>
+<div class="corner corner-tr"></div>
+<div class="corner corner-bl"></div>
+<div class="corner corner-br"></div>
+
+<!-- Scene background -->
+<div class="scene">
+  <div class="sky"></div>
+
+  <!-- Industrial skyline SVG -->
+  <div class="skyline">
+    <svg viewBox="0 0 1200 300" preserveAspectRatio="xMidYMax meet" fill="none">
+      <!-- Industrial structures background -->
+      <rect x="0" y="180" width="1200" height="120" fill="#060d14"/>
+      <!-- Far left factory -->
+      <rect x="20" y="120" width="40" height="180" fill="#0a141e"/>
+      <rect x="35" y="80" width="10" height="45" fill="#0a141e"/>
+      <rect x="10" y="140" width="60" height="10" fill="#0c1a26"/>
+      <!-- Chimneys far left -->
+      <rect x="50" y="60" width="8" height="65" fill="#0a141e"/>
+      <rect x="65" y="90" width="6" height="50" fill="#0a141e"/>
+      <!-- Mid-left complex -->
+      <rect x="100" y="100" width="80" height="200" fill="#081219"/>
+      <rect x="120" y="70" width="15" height="35" fill="#081219"/>
+      <rect x="140" y="50" width="10" height="55" fill="#081219"/>
+      <rect x="90" y="130" width="100" height="8" fill="#0c1a26"/>
+      <!-- Tower structures -->
+      <line x1="180" y1="60" x2="140" y2="110" stroke="#0d1f2e" stroke-width="3"/>
+      <line x1="180" y1="60" x2="220" y2="110" stroke="#0d1f2e" stroke-width="3"/>
+      <!-- Left refinery -->
+      <rect x="220" y="90" width="30" height="210" fill="#091319"/>
+      <rect x="255" y="110" width="20" height="190" fill="#081018"/>
+      <rect x="240" y="60" width="8" height="35" fill="#091319"/>
+      <!-- Pipe connections -->
+      <rect x="200" y="145" width="80" height="6" fill="#0a1520" rx="3"/>
+      <rect x="260" y="120" width="6" height="30" fill="#0a1520"/>
+      <!-- Central tower -->
+      <polygon points="480,40 540,40 560,300 460,300" fill="#06101a"/>
+      <rect x="470" y="30" width="15" height="15" fill="#06101a"/>
+      <rect x="500" y="25" width="12" height="18" fill="#06101a"/>
+      <!-- Tower cross beams -->
+      <line x1="460" y1="100" x2="560" y2="100" stroke="#0a1825" stroke-width="2"/>
+      <line x1="465" y1="150" x2="555" y2="150" stroke="#0a1825" stroke-width="2"/>
+      <line x1="468" y1="200" x2="552" y2="200" stroke="#0a1825" stroke-width="2"/>
+      <!-- Diagonal supports -->
+      <line x1="460" y1="300" x2="510" y2="40" stroke="#0c1e2d" stroke-width="1.5"/>
+      <line x1="560" y1="300" x2="510" y2="40" stroke="#0c1e2d" stroke-width="1.5"/>
+      <!-- Right side -->
+      <rect x="620" y="110" width="60" height="190" fill="#081219"/>
+      <rect x="640" y="75" width="10" height="40" fill="#081219"/>
+      <rect x="655" y="55" width="8" height="60" fill="#081219"/>
+      <rect x="700" y="90" width="45" height="210" fill="#091420"/>
+      <rect x="750" y="120" width="25" height="180" fill="#081219"/>
+      <!-- Far right -->
+      <rect x="820" y="100" width="70" height="200" fill="#06101a"/>
+      <rect x="835" y="65" width="12" height="40" fill="#06101a"/>
+      <rect x="855" y="45" width="9" height="60" fill="#06101a"/>
+      <!-- Pipe grid right -->
+      <rect x="800" y="155" width="100" height="5" fill="#0a1520" rx="2"/>
+      <rect x="900" y="130" width="80" height="170" fill="#091420"/>
+      <rect x="920" y="80" width="10" height="55" fill="#091420"/>
+      <rect x="940" y="95" width="8" height="40" fill="#091420"/>
+      <rect x="1000" y="115" width="55" height="185" fill="#081219"/>
+      <rect x="1060" y="130" width="40" height="170" fill="#06101a"/>
+      <rect x="1100" y="105" width="60" height="195" fill="#07111b"/>
+      <rect x="1120" y="60" width="12" height="50" fill="#07111b"/>
+      <!-- Orange light accents -->
+      <circle cx="145" cy="52" r="3" fill="#ff5e1a" opacity="0.6"/>
+      <circle cx="503" cy="27" r="2" fill="#ff5e1a" opacity="0.5"/>
+      <circle cx="658" cy="57" r="2" fill="#ff5e1a" opacity="0.5"/>
+      <circle cx="858" cy="47" r="2.5" fill="#ff5e1a" opacity="0.4"/>
+      <circle cx="923" cy="82" r="2" fill="#ff5e1a" opacity="0.5"/>
+      <!-- Cyan window dots -->
+      <rect x="108" y="110" width="4" height="4" fill="#00d4ff" opacity="0.3"/>
+      <rect x="118" y="110" width="4" height="4" fill="#00d4ff" opacity="0.2"/>
+      <rect x="728" y="100" width="4" height="4" fill="#00d4ff" opacity="0.3"/>
+      <rect x="738" y="100" width="4" height="4" fill="#00d4ff" opacity="0.2"/>
+    </svg>
+  </div>
+
+  <div class="water"></div>
+
+  <!-- Smoke -->
+  <div class="smoke-wrap">
+    <div class="smoke" style="left:33%"></div>
+    <div class="smoke" style="left:35.5%"></div>
+    <div class="smoke" style="left:49%"></div>
+    <div class="smoke" style="left:51.5%"></div>
+  </div>
+
+  <!-- Particle canvas -->
+  <canvas id="particles"></canvas>
+
+  <!-- Grid -->
+  <div class="grid-overlay"></div>
+
+  <!-- Bio-Aether Wireframe Diagram -->
+  <div class="diagram">
+    <svg viewBox="0 0 300 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Lattice frame legs -->
+      <line x1="150" y1="50" x2="30" y2="380" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <line x1="150" y1="50" x2="270" y2="380" stroke="#00d4ff" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <line x1="60" y1="200" x2="240" y2="200" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+      <line x1="45" y1="280" x2="255" y2="280" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+      <line x1="35" y1="340" x2="265" y2="340" stroke="#00d4ff" stroke-width="1" opacity="0.5"/>
+      <!-- Diagonal cross braces -->
+      <line x1="60" y1="200" x2="90" y2="280" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+      <line x1="90" y1="200" x2="60" y2="280" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+      <line x1="210" y1="200" x2="240" y2="280" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+      <line x1="240" y1="200" x2="210" y2="280" stroke="#00d4ff" stroke-width="0.8" opacity="0.4"/>
+      <!-- Main cylinder body -->
+      <ellipse cx="150" cy="130" rx="38" ry="10" stroke="#00d4ff" stroke-width="1.5"/>
+      <ellipse cx="150" cy="280" rx="38" ry="10" stroke="#00d4ff" stroke-width="1.5"/>
+      <line x1="112" y1="130" x2="112" y2="280" stroke="#00d4ff" stroke-width="1.5"/>
+      <line x1="188" y1="130" x2="188" y2="280" stroke="#00d4ff" stroke-width="1.5"/>
+      <!-- Bio-resonance ring -->
+      <ellipse cx="150" cy="185" rx="50" ry="13" stroke="#00d4ff" stroke-width="2" opacity="0.8">
+        <animate attributeName="rx" values="50;58;50" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.8;1;0.8" dur="3s" repeatCount="indefinite"/>
+      </ellipse>
+      <ellipse cx="150" cy="185" rx="42" ry="11" stroke="#00d4ff" stroke-width="1" opacity="0.4"/>
+      <!-- HEPA top cylinders -->
+      <rect x="125" y="20" width="18" height="55" rx="2" stroke="#00d4ff" stroke-width="1.2"/>
+      <rect x="157" y="20" width="18" height="55" rx="2" stroke="#00d4ff" stroke-width="1.2"/>
+      <!-- Top platform -->
+      <rect x="108" y="115" width="84" height="8" rx="1" stroke="#00d4ff" stroke-width="1.2" fill="rgba(0,212,255,0.05)"/>
+      <!-- Sonic cables top -->
+      <line x1="143" y1="20" x2="143" y2="0" stroke="#00d4ff" stroke-width="1" stroke-dasharray="3,2"/>
+      <line x1="165" y1="20" x2="165" y2="0" stroke="#00d4ff" stroke-width="1" stroke-dasharray="3,2"/>
+      <!-- Annular filter rings -->
+      <ellipse cx="150" cy="220" rx="30" ry="8" stroke="#00d4ff" stroke-width="1.2" opacity="0.7"/>
+      <ellipse cx="150" cy="240" rx="30" ry="8" stroke="#00d4ff" stroke-width="1.2" opacity="0.5"/>
+      <!-- Particles inside cylinder -->
+      <circle cx="140" cy="200" r="2" fill="#ff5e1a" opacity="0.7">
+        <animate attributeName="cy" values="200;170;200" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="160" cy="220" r="1.5" fill="#ff5e1a" opacity="0.5">
+        <animate attributeName="cy" values="220;190;220" dur="3.2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="150" cy="180" r="1.5" fill="#ff5e1a" opacity="0.6">
+        <animate attributeName="cy" values="180;155;180" dur="2.8s" repeatCount="indefinite"/>
+      </circle>
+      <!-- Outlet pipe -->
+      <rect x="142" y="280" width="16" height="70" rx="2" stroke="#00d4ff" stroke-width="1.5"/>
+      <line x1="150" y1="350" x2="150" y2="380" stroke="#ff5e1a" stroke-width="2.5"/>
+      <!-- Collection beakers -->
+      <path d="M100,400 L108,480 L142,480 L150,400 Z" stroke="#00d4ff" stroke-width="1.2" fill="rgba(0,212,255,0.03)"/>
+      <ellipse cx="125" cy="400" rx="26" ry="6" stroke="#00d4ff" stroke-width="1"/>
+      <path d="M150,400 L158,480 L192,480 L200,400 Z" stroke="#00d4ff" stroke-width="1.2" fill="rgba(0,212,255,0.03)"/>
+      <ellipse cx="175" cy="400" rx="26" ry="6" stroke="#00d4ff" stroke-width="1"/>
+      <!-- Base platform -->
+      <rect x="20" y="478" width="260" height="6" rx="1" stroke="#00d4ff" stroke-width="1" fill="rgba(0,212,255,0.05)"/>
+      <!-- Pile foundations -->
+      <line x1="55" y1="484" x2="55" y2="510" stroke="#00d4ff" stroke-width="2"/>
+      <line x1="245" y1="484" x2="245" y2="510" stroke="#00d4ff" stroke-width="2"/>
+      <line x1="150" y1="484" x2="150" y2="510" stroke="#00d4ff" stroke-width="2"/>
+    </svg>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="page">
+
+  <div class="badge">
+    <div class="badge-dot"></div>
+    <span class="badge-text">Sistema Bio-Aether Core — v2.0 // CLASIFICADO</span>
+  </div>
+
+  <div class="title-block">
+    <p class="title-sub">// Protocolo de acceso autorizado</p>
+    <h1>BIO<span>-AETHER</span><br>CORE</h1>
+  </div>
+  <p class="tagline">Sistema de control de resonancia bio-frecuencial</p>
+
+  <div class="divider"></div>
+
+  <!-- Register Panel -->
+  <div class="panel" id="panel">
+    <div class="panel-header">
+      <span class="panel-title">// Registro de Operador</span>
+      <span class="panel-id">ID: BAC-<span id="session-id">----</span></span>
+    </div>
+
+    <!-- Form -->
+    <div id="form-area">
+      <div class="field">
+        <label>Designación de Operador</label>
+        <input type="text" id="inp-name" placeholder="Ej. VALERIA REYES" autocomplete="off">
+        <span class="field-icon">◈</span>
+        <div class="error-msg" id="err-name">// Campo requerido</div>
+      </div>
+
+      <div class="field">
+        <label>Frecuencia de Contacto (Email)</label>
+        <input type="email" id="inp-email" placeholder="operador@bac.net" autocomplete="off">
+        <span class="field-icon">⊛</span>
+        <div class="error-msg" id="err-email">// Formato de frecuencia inválido</div>
+      </div>
+
+      <div class="field">
+        <label>Clave de Acceso</label>
+        <input type="password" id="inp-pass" placeholder="••••••••" autocomplete="new-password">
+        <span class="field-icon">⊕</span>
+        <div class="error-msg" id="err-pass">// Mínimo 8 caracteres</div>
+      </div>
+
+      <div class="field">
+        <label>Módulo Asignado</label>
+        <div class="select-wrap">
+          <select id="inp-role">
+            <option value="">— Seleccionar —</option>
+            <option value="venturi">Control Venturi</option>
+            <option value="iris">Iris Cinético</option>
+            <option value="maglev">Suspensión Maglev</option>
+            <option value="telemetry">Telemetría & Análisis</option>
+            <option value="biores">Cámara Bio-Resonancia</option>
+          </select>
+        </div>
+        <div class="error-msg" id="err-role">// Selección requerida</div>
+      </div>
+
+      <div style="margin-bottom:1.6rem;">
+        <label>Nivel de Autorización</label>
+        <div class="access-row">
+          <button class="access-btn" data-level="1" onclick="setLevel(this)">ALPHA</button>
+          <button class="access-btn active" data-level="2" onclick="setLevel(this)">BETA</button>
+          <button class="access-btn" data-level="3" onclick="setLevel(this)">GAMMA</button>
+          <button class="access-btn" data-level="4" onclick="setLevel(this)">DELTA</button>
+        </div>
+      </div>
+
+      <button class="btn-register" id="btn-reg" onclick="handleRegister()">
+        <span>▶&nbsp;&nbsp;INICIAR REGISTRO</span>
+      </button>
+    </div>
+
+    <!-- Success state -->
+    <div class="success-panel" id="success-area">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Acceso Autorizado</div>
+      <div class="success-msg">
+        Operador registrado en el núcleo.<br>
+        Sincronización de frecuencia completada.
+      </div>
+      <div class="operator-id" id="op-id">OP // ----</div>
+    </div>
+  </div>
+
+  <!-- Stats footer -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-val" id="stat-ops">047</span>
+      <span class="stat-label">Operadores activos</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val">432</span>
+      <span class="stat-label">Hz resonancia base</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val" id="stat-stab">98.4%</span>
+      <span class="stat-label">Estabilidad global</span>
+    </div>
+  </div>
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div class="status-item"><div class="status-dot"></div> MAGLEV ACTIVO</div>
+  <div class="status-item"><div class="status-dot orange"></div> VENTURI 65%</div>
+  <div class="status-item">IRIS: 0.75 // FRECUENCIA: 432Hz</div>
+  <div class="status-item" style="margin-left:auto;" id="clock">--:--:--</div>
+</div>
+
+<script>
+// ── Session ID ──
+const sid = Math.floor(Math.random()*9000+1000);
+document.getElementById('session-id').textContent = sid;
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toTimeString().slice(0,8);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Particles ──
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 1.5 + 0.3;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = -Math.random() * 0.5 - 0.1;
+    this.life = Math.random();
+    this.maxLife = Math.random() * 0.6 + 0.2;
+    this.type = Math.random() > 0.85 ? 'orange' : 'cyan';
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life += 0.002;
+    if (this.life > this.maxLife || this.y < 0) this.reset();
+  }
+  draw() {
+    const alpha = Math.sin((this.life / this.maxLife) * Math.PI) * 0.5;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.type === 'orange'
+      ? `rgba(255,94,26,${alpha})`
+      : `rgba(0,212,255,${alpha * 0.6})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 120; i++) particles.push(new Particle());
+
+function animLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animLoop);
+}
+animLoop();
+
+// ── Access level ──
+let selectedLevel = 2;
+function setLevel(btn) {
+  document.querySelectorAll('.access-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedLevel = parseInt(btn.dataset.level);
+}
+
+// ── Live stability counter ──
+let stab = 98.4;
+setInterval(() => {
+  stab += (Math.random() - 0.5) * 0.3;
+  stab = Math.max(94, Math.min(99.9, stab));
+  document.getElementById('stat-stab').textContent = stab.toFixed(1) + '%';
+}, 2000);
+
+// ── Register handler ──
+function validate() {
+  let ok = true;
+  const fields = [
+    { id: 'inp-name', err: 'err-name', test: v => v.trim().length >= 2 },
+    { id: 'inp-email', err: 'err-email', test: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+    { id: 'inp-pass', err: 'err-pass', test: v => v.length >= 8 },
+    { id: 'inp-role', err: 'err-role', test: v => v !== '' },
+  ];
+  fields.forEach(f => {
+    const inp = document.getElementById(f.id);
+    const err = document.getElementById(f.err);
+    if (!f.test(inp.value)) {
+      inp.classList.add('error');
+      err.style.display = 'block';
+      ok = false;
+    } else {
+      inp.classList.remove('error');
+      err.style.display = 'none';
+    }
+  });
+  return ok;
+}
+
+function handleRegister() {
+  if (!validate()) return;
+
+  const btn = document.getElementById('btn-reg');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  const name = document.getElementById('inp-name').value.trim().toUpperCase();
+  const levels = ['', 'ALPHA', 'BETA', 'GAMMA', 'DELTA'];
+
+  setTimeout(() => {
+    // Show success
+    document.getElementById('form-area').style.display = 'none';
+    const sucArea = document.getElementById('success-area');
+    sucArea.style.display = 'block';
+    const opCode = `${levels[selectedLevel]}-${Math.floor(Math.random()*9000+1000)}`;
+    document.getElementById('op-id').textContent = `OP // ${opCode}`;
+    // Increment operators
+    const el = document.getElementById('stat-ops');
+    el.textContent = String(parseInt(el.textContent) + 1).padStart(3,'0');
+  }, 2000);
+}
+
+// ── Input clear errors on type ──
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', () => {
+    el.classList.remove('error');
+    const errId = 'err-' + el.id.replace('inp-','');
+    const errEl = document.getElementById(errId);
+    if (errEl) errEl.style.display = 'none';
+  });
+});
+</script>
+</body>
+</html>
